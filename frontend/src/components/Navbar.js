@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 
 export const Navbar = () => {
   const { user, logout } = useAuth();
+  
 
   return (
     <nav className="bg-white shadow-lg">

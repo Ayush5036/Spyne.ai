@@ -1,4 +1,3 @@
-// src/pages/CarList.js
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../api/axios';
@@ -7,16 +6,21 @@ export const CarList = () => {
   const [cars, setCars] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     fetchCars();
-  }, []);
+  }, [searchQuery]);
 
   const fetchCars = async () => {
     try {
       console.log('Fetching cars...');
-      // Updated endpoint to match backend route
-      const { data } = await api.get('/cars/all');
+      let endpoint = '/cars/all';
+      if (searchQuery) {
+        endpoint = `/cars/all?search=${encodeURIComponent(searchQuery)}`;
+      }
+  
+      const { data } = await api.get(endpoint);
       console.log('Cars data:', data);
       setCars(data.cars || []);
       setError(null);
@@ -24,16 +28,20 @@ export const CarList = () => {
       console.error('Error details:', {
         message: error.message,
         response: error.response?.data,
-        status: error.response?.status
+        status: error.response?.status,
       });
       setError(
-        error.response?.data?.message || 
+        error.response?.data?.message ||
         'Failed to fetch cars. Please try again later.'
       );
       setCars([]);
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSearch = (e) => {
+    setSearchQuery(e.target.value);
   };
 
   if (loading) return (
@@ -45,7 +53,7 @@ export const CarList = () => {
   if (error) return (
     <div className="flex flex-col items-center h-64 mt-8">
       <p className="text-red-600 mb-4">{error}</p>
-      <button 
+      <button
         onClick={fetchCars}
         className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700"
       >
@@ -57,7 +65,16 @@ export const CarList = () => {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Cars</h1>
+        <div className="flex items-center space-x-4">
+          <h1 className="text-3xl font-bold">Cars</h1>
+          <input
+            type="text"
+            placeholder="Search cars..."
+            value={searchQuery}
+            onChange={handleSearch}
+            className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+          />
+        </div>
         <Link
           to="/cars/new"
           className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700"

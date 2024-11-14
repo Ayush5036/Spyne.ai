@@ -1,4 +1,3 @@
-// src/context/AuthContext.js
 import { createContext, useContext, useState, useEffect } from 'react';
 import api from '../api/axios';
 
@@ -12,14 +11,28 @@ export const AuthProvider = ({ children }) => {
     checkAuth();
   }, []);
 
-  const checkAuth = async () => {
+  const getTokenFromStorage = () => {
+    return localStorage.getItem('token');
+  };
+
+  const checkAuth = () => {
     try {
-      const token = localStorage.getItem('token');
+      const token = getTokenFromStorage();
       if (token) {
-        const { data } = await api.get('/auth/me');
-        setUser(data.user);
+        // Decode the token to get the user information
+        const decodedToken = JSON.parse(atob(token.split('.')[1]));
+        // console.log(decodedToken);
+
+        setUser(decodedToken);
+        console.log(user);
+
+      } else {  
+        setUser(null);
       }
+
+      
     } catch (error) {
+      // Remove the token from local storage if it's invalid or missing
       localStorage.removeItem('token');
       setUser(null);
     } finally {
@@ -43,7 +56,7 @@ export const AuthProvider = ({ children }) => {
 
   const logout = async () => {
     try {
-      await api.post('/auth/logout');
+      await api.get('/auth/logout');
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
@@ -52,6 +65,10 @@ export const AuthProvider = ({ children }) => {
       window.location.href = '/login';
     }
   };
+
+  if (loading) {
+    return <div>Loading...</div>; // Render a loading indicator
+  }
 
   return (
     <AuthContext.Provider
@@ -64,13 +81,14 @@ export const AuthProvider = ({ children }) => {
         checkAuth
       }}
     >
-      {!loading && children}
+      {children}
     </AuthContext.Provider>
   );
 };
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
+  // console.log(context);
   if (!context) {
     throw new Error('useAuth must be used within an AuthProvider');
   }

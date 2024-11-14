@@ -45,7 +45,8 @@ exports.createCar = async (req, res) => {
 
 exports.getAllCars = async (req, res) => {
   try {
-    const keyword = req.query.keyword || '';
+    console.log(req.query)
+    const keyword = req.query.search || '';
     const query = {
       user: req.user._id,
       $or: [
@@ -230,5 +231,34 @@ exports.deleteCar = async (req, res) => {
       message: 'Failed to delete car',
       error: error.message 
     });
+  }
+};
+
+
+exports.getCars = async (req, res) => {
+  try {
+    const { page = 1, limit = 10, search = '' } = req.query;
+    const options = {
+      page: parseInt(page),
+      limit: parseInt(limit),
+      sort: { createdAt: -1 }
+    };
+
+    // Build the search query
+    const searchRegex = new RegExp(search, 'i');
+    const query = {
+      $or: [
+        { title: searchRegex },
+        { 'tags.car_type': searchRegex },
+        { 'tags.company': searchRegex },
+        { 'tags.dealer': searchRegex }
+      ]
+    };
+
+    const cars = await Car.paginate(query, options);
+    res.status(200).json(cars);
+  } catch (error) {
+    console.error('Error getting cars:', error);
+    res.status(500).json({ message: 'Error getting cars' });
   }
 };
