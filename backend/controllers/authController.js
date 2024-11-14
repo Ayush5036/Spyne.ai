@@ -32,11 +32,7 @@ exports.registerUser = async (req, res) => {
       return res.status(400).json({ success: false, message: "Email already exists" });
     }
 
-    console.log(req.body)
-    // Create new user
     const user = await User.create({ name, email, password });
-    console.log(user)
-    // Send token or response
     sendToken(user, 201, res);
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });

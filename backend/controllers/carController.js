@@ -45,7 +45,6 @@ exports.createCar = async (req, res) => {
 
 exports.getAllCars = async (req, res) => {
   try {
-    console.log(req.query)
     const keyword = req.query.search || '';
     const query = {
       user: req.user._id,
