@@ -14,7 +14,7 @@ function getTokenFromCookie() {
 }
 
 const api = axios.create({
-  baseURL: 'http://localhost:5000/api',
+  baseURL: 'https://spyne-ai-wup9.onrender.com/api',
   withCredentials: true
 });
 
